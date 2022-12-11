@@ -6,7 +6,7 @@ source("process_source.R")
 #---------------------------------
 # 1. Extract data from xml
 
-data_path = "/Users/liyuhan/Dropbox/DTR review paper/OhioT1DM/2020/train/"
+data_path = ".../OhioT1DM/2020/train/"
 
 ###training data
 raw_train = list()
@@ -62,7 +62,7 @@ str(raw_train[[5]][[12]])
 # 
 # raw_test = list()
 # 
-# data_path = "/Users/liyuhan/Dropbox/DTR review paper/OhioT1DM/2020/test/"
+# data_path = ".../OhioT1DM/2020/test/"
 # file_names = c("540-ws-testing.xml", 
 #                "544-ws-testing.xml", 
 #                "552-ws-testing.xml", 
@@ -149,9 +149,6 @@ names(data_full[[5]])
 
 sum(data_full[[3]]$bolus != 0)
 
-
-48*6
-40*6
 train0$glucose[200:240]
 
 data_full[[1]]$steps
@@ -190,58 +187,3 @@ data_full[[1]]$exercise
 
 save.image("data_preprocessed-5min.Rdata")
 
-# 
-
-# 
-# load("data_preprocessed-5min.Rdata")
-# i = 1
-# dataset = data_full[[i]]
-# startdate = 7
-# enddate = 13
-# nday = enddate - startdate + 1
-# ntt = 60 * 24 / 5
-# temp = subset(dataset, (day >= startdate) & (day <= enddate))
-# temp$timestamp = (temp$day - startdate) * ntt + temp$tt
-# 
-# #plot the glucose
-# par(mar=c(5, 4, 4, 6) + 0.1)
-# plot(temp$timestamp, temp$glucose, 
-#      ylim = c(0, 400),
-#      xlim = c(0, ntt * nday), type = "l", axes = FALSE, 
-#      xlab = "", ylab = "",
-#      main = paste("Mobile Health Data for Diabetes Patients", i, "in", nday, "days"))
-# labels = rep("", 2 * nday + 1)
-# labels[(1:nday) * 2] = paste("Day ", c(1 : nday) )
-# axis(1, at = (ntt / 2 * c(0:(nday * 2))), labels = labels, 
-#      col="black")
-# abline(h = 80, col = "green")
-# abline(h = 140, col = "green")
-# mtext("Timestamp with 5 Min Intervals", side=1, line=2.5)
-# #axis(2,ylim=c(0,400),col="black")
-# #mtext("Blood Glucose (mg/dL)",side=2,line=2.5)
-# box()
-# par(new=TRUE)
-# 
-# #plot the meals
-# temp2 = subset(temp, meal > 0)
-# plot(temp2$timestamp, temp2$meal,
-#      xlim = c(0, ntt * nday), pch = 20, 
-#      xlab = "", ylab = "",ylim = c(0, 200), 
-#      axes = FALSE, col = "red", col.axis="red")
-# arrows(temp2$timestamp, 0, temp2$timestamp, temp2$meal, length = 0,col = "red")
-# mtext("Carb Intake (g)", side = 4,col = "red",line = 2.5)
-# axis(4, ylim = c(0, 200), col = "red", col.ticks = "red")
-# 
-# #plot insulin dosage
-# par(new = TRUE)
-# temp3 = subset(temp, bolus > 0)
-# plot(temp3$timestamp, temp3$bolus, 
-#      xlim = c(0, ntt * nday), pch = 20,
-#      xlab = "", ylab = "", col = "blue", ylim = c(0, 20), axes = FALSE)
-# arrows(temp3$timestamp, 0, temp3$timestamp, temp3$bolus, length = 0, col = "blue")
-# axis(2, ylim = c(0, 20), col = "blue", col.ticks = "blue")
-# mtext("Insulin Dosage (Unit)", side = 2, col = "blue", line = 2.5)
-# 
-# legend("topleft", col = c("black","green"), 
-#        lty = c(1, 1), legend = c("Blood Glucose (mg/dL)", "Safe Blood Glucose Range"))
-# 
