@@ -72,7 +72,6 @@ for (i in 1:50){
 	set.seed(i*10)
 	uni = unique(complete_train1$day)
 	ind = sample(uni,11)
-	print(ind)
 	indd=complete_train1$day %in% ind
 	train_new = complete_train1[indd,]
 	train_new1 = train_new[order(train_new$tt),]
@@ -98,12 +97,12 @@ for (i in 1:50){
 
 unique(complete_train1$day)
 sample(13,10)
-X = train_new1[,c(3,5,6)]
+X = complete_train1[,c(3,5,6)]
 #A is the longitudinal assigned treatment 
-A = train_new1[-c((dim(X)[1]-12):dim(X)[1]),4]
+A = complete_train1[-c((dim(X)[1]-12):dim(X)[1]),4]
 length(A)
 #R is the longitudinal reward 
-R = train_new1[-c((dim(X)[1]-12):dim(X)[1]),7]
+R = complete_train1[-c((dim(X)[1]-12):dim(X)[1]),7]
 N=13
 fit1 = proximalDTR(X = X, A=A, R=R, n_ID =13 , stage=48, gamma=0.9,
 									 lambda.set = c(4),step.beta = 0.01, step.omega = 0.01,
