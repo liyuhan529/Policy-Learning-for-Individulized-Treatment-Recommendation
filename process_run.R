@@ -179,11 +179,5 @@ for (n in 1:nperson){
   print(n)
 }
 
-names(train1)
 
-str(data_full)
-
-data_full[[1]]$exercise
-
-save.image("data_preprocessed-5min.Rdata")
 
