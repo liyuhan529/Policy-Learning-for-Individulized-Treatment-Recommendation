@@ -1,0 +1,218 @@
+---
+title: "OhioT1DM Data Analysis"
+author: "Yuhan Li"
+date: '2023-01-18'
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#devtools::install_github("vincentskywalkers/ProximalDTR-/proximalDTR")
+library(proximalDTR)
+pat1=read.csv("patient1_dis.csv")
+trainset <- pat1
+
+train <- data.frame(trainset$day,trainset$tt,trainset$glucose,trainset$heart,
+										trainset$bolus,trainset$meal,trainset$icg)
+train1=train
+```
+
+```{r}
+complete_train1 = train1
+#complete_train1 = train1[train1$trainset.day %in% count.index,]
+colnames(complete_train1) = c("day","tt","glucose","heart","bolus","meal","icg")
+
+complete_train1$heart[is.na(complete_train1$heart)] = mean(complete_train1$heart,na.rm = T)
+complete_train1$glucose[is.na(complete_train1$glucose)] = mean(complete_train1$glucose,na.rm = T)
+complete_train1$icg[is.na(complete_train1$icg)] = mean(complete_train1$icg,na.rm = T)
+```
+
+```{r}
+train_new1=complete_train1[order(complete_train1$tt),]
+#View(train_new1)
+X = train_new1[,c(3,4,6)]
+#A is the longitudinal assigned treatment 
+A = train_new1[-c((dim(X)[1]-32):dim(X)[1]),5]
+#R is the longitudinal reward 
+R = train_new1[-c((dim(X)[1]-32):dim(X)[1]),7]
+```
+
+```{r}
+X[1:7,]
+A[1:7]
+R[1:7]
+```
+```{r}
+N=33
+fit1 = proximalDTR(X = X, A=A, R=R, n_ID = 33, stage=48, gamma=0.9, lambda.set = c(2),step.beta = 0.001, 
+									 step.omega = 0.001, desc.rate = 0.001, max.iter = 3000, max.iter.cv = 1000, bw= 1, cv=F, trace =F)
+```
+
+
+```{r}
+pred.fit2 <- predict_rl(fit1, c(200,90,0))
+pred.fit2$prob
+```
+
+```{r}
+pred.fit2$recommend.trt
+```
+
+
+
+
+```{r}
+pred.fit1 <- predict_rl(fit1, c(100,90,0))
+a1=pred.fit1$prob
+#a1
+
+pred.fit2 <- predict_rl(fit1, c(200,90,0))
+a2=pred.fit2$prob
+#a2
+
+pred.fit3 <- predict_rl(fit1, c(300,90,0))
+a3=pred.fit3$prob
+#a3
+
+pred.fit4 <- predict_rl(fit1, c(200,90,15))
+a4=pred.fit4$prob
+#a4
+
+pred.fit5 <- predict_rl(fit1, c(200,120,15))
+a5=pred.fit5$prob
+#a5
+
+pred.fit6<- predict_rl(fit1, c(200,120,60))
+a6=pred.fit6$prob
+#a6
+```
+
+```{r}
+library(reshape2)
+library(ggplot2)
+trt=as.factor(c(0:13))
+df1 <- data.frame(a1,a2,a3,a4,a5,a6,trt)
+df2 <- melt(df1, id.vars='trt')
+
+library(gridExtra)
+
+
+plot1=ggplot(data=df1, aes(x=trt, y=a1))+xlab("Dose Level")+ylab("Probability")+
+geom_bar(stat="identity")+coord_flip()+scale_y_continuous(limits = c(0, 1))+
+  annotate("text", x=12,y=0.75,label = "Glucose=100",size=4) +
+  annotate("text", x=11,y=0.75,label = "Heart rate=90",size=4)+
+  annotate("text", x=10,y=0.7,label = "Meal=0",size=4)+
+  theme(
+    axis.title=element_text(color='black',size=12),
+    axis.text=element_text(color="black",size=12),
+    axis.title.y.right=element_text(color="red",size=12),
+    axis.text.y.right=element_text(color="red",size=12),
+    panel.background = element_rect(fill="white"),
+    panel.grid.minor.y = element_line(size=2),
+    panel.grid.major = element_line(colour = "white"),
+    plot.background = element_rect(fill="white"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_rect(colour = "white", fill=NA,size=1)
+  )
+
+plot2=ggplot(data=df1, aes(x=trt, y=a2))+xlab("Dose Level")+ylab("Probability")+
+  geom_bar(stat="identity")+coord_flip()+scale_y_continuous(limits = c(0, 1))+
+  annotate("text", x=12,y=0.75,label = "Glucose=200",size=4) +
+  annotate("text", x=11,y=0.75,label = "Heart rate=90",size=4)+
+  annotate("text", x=10,y=0.7,label = "Meal=0",size=4)+
+  theme(
+    axis.title=element_text(color='black',size=12),
+    axis.text=element_text(color="black",size=12),
+    axis.title.y.right=element_text(color="red",size=12),
+    axis.text.y.right=element_text(color="red",size=12),
+    panel.background = element_rect(fill="white"),
+    panel.grid.minor.y = element_line(size=2),
+    panel.grid.major = element_line(colour = "white"),
+    plot.background = element_rect(fill="white"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_rect(colour = "white", fill=NA,size=1)
+  )
+
+plot3=ggplot(data=df1, aes(x=trt, y=a3))+xlab("Dose Level")+ylab("Probability")+
+  geom_bar(stat="identity")+coord_flip()+scale_y_continuous(limits = c(0, 1))+
+  annotate("text", x=12,y=0.75,label = "Glucose=300",size=4) +
+  annotate("text", x=11,y=0.75,label = "Heart rate=90",size=4)+
+  annotate("text", x=10,y=0.7,label = "Meal=0",size=4)+
+  theme(
+    axis.title=element_text(color='black',size=12),
+    axis.text=element_text(color="black",size=12),
+    axis.title.y.right=element_text(color="red",size=12),
+    axis.text.y.right=element_text(color="red",size=12),
+    panel.background = element_rect(fill="white"),
+    panel.grid.minor.y = element_line(size=2),
+    panel.grid.major = element_line(colour = "white"),
+    plot.background = element_rect(fill="white"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_rect(colour = "white", fill=NA,size=1)
+  )
+grid.arrange(plot1, plot2,plot3, ncol=3)
+
+```
+
+```{r}
+plot4=ggplot(data=df1, aes(x=trt, y=a4))+xlab("Dose Level")+ylab("Probability")+
+  geom_bar(stat="identity")+coord_flip()+scale_y_continuous(limits = c(0, 1))+
+  annotate("text", x=3,y=0.75,label = "Glucose=200",size=4) +
+  annotate("text", x=4,y=0.75,label = "Heart rate=90",size=4)+
+  annotate("text", x=5,y=0.7,label = "Meal=15",size=4)+
+  theme(
+    axis.title=element_text(color='black',size=12),
+    axis.text=element_text(color="black",size=12),
+    axis.title.y.right=element_text(color="red",size=12),
+    axis.text.y.right=element_text(color="red",size=12),
+    panel.background = element_rect(fill="white"),
+    panel.grid.minor.y = element_line(size=2),
+    panel.grid.major = element_line(colour = "white"),
+    plot.background = element_rect(fill="white"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_rect(colour = "white", fill=NA,size=1)
+  )
+
+plot5=ggplot(data=df1, aes(x=trt, y=a5))+xlab("Dose Level")+ylab("Probability")+
+  geom_bar(stat="identity")+coord_flip()+scale_y_continuous(limits = c(0, 1))+
+  annotate("text", x=3,y=0.75,label = "Glucose=200",size=4) +
+  annotate("text", x=4,y=0.75,label = "Heart rate=120",size=4)+
+  annotate("text", x=5,y=0.7,label = "Meal=15",size=4)+
+  theme(
+    axis.title=element_text(color='black',size=12),
+    axis.text=element_text(color="black",size=12),
+    axis.title.y.right=element_text(color="red",size=12),
+    axis.text.y.right=element_text(color="red",size=12),
+    panel.background = element_rect(fill="white"),
+    panel.grid.minor.y = element_line(size=2),
+    panel.grid.major = element_line(colour = "white"),
+    plot.background = element_rect(fill="white"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_rect(colour = "white", fill=NA,size=1)
+  )
+
+plot6=ggplot(data=df1, aes(x=trt, y=a6))+xlab("Dose Level")+ylab("Probability")+
+  geom_bar(stat="identity")+coord_flip()+scale_y_continuous(limits = c(0, 1))+
+  annotate("text", x=3,y=0.75,label = "Glucose=200",size=4) +
+  annotate("text", x=4,y=0.75,label = "Heart rate=120",size=4)+
+  annotate("text", x=5,y=0.7,label = "Meal=60",size=4)+
+  theme(
+    axis.title=element_text(color='black',size=12),
+    axis.text=element_text(color="black",size=12),
+    axis.title.y.right=element_text(color="red",size=12),
+    axis.text.y.right=element_text(color="red",size=12),
+    panel.background = element_rect(fill="white"),
+    panel.grid.minor.y = element_line(size=2),
+    panel.grid.major = element_line(colour = "white"),
+    plot.background = element_rect(fill="white"),
+    axis.line = element_line(colour = "black"),
+    panel.border = element_rect(colour = "white", fill=NA,size=1)
+  )
+grid.arrange(plot4, plot5,plot6, ncol=3)
+```
+
